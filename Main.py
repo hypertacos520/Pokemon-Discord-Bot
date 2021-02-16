@@ -1,5 +1,4 @@
-#DISCLAIMER: My source code is a disaster and this is the first thing I've really sunk any amount of time into coding by myself.
-#Tons of bugs should be expected as well as things that don't make any sense.
+#DISCLAIMER: Tons of bugs should be expected as well as things that don't make any sense.
 
 #Import Libraries
 import discord
@@ -27,7 +26,7 @@ with open(programDirectory + '/botToken.txt', 'r') as file:
 #Define Useful Functions
 #Convert the Text Representation of Pokemon Types to a Numerical Representation
 #Representation may seem random, but it actually is made to match up with the movest dataset
-def convert_type_to_num(typeText): #WHY DIDN'T I USE A DICTIONARY FOR THESE FUNCTIONS ./run_gui_qcma.sh
+def convert_type_to_num(typeText): #Lets just ignore I didn't use a python structure for this for now...
     if typeText == 'Fairy': 
         return 18
     elif typeText == 'Normal':
@@ -154,12 +153,7 @@ class Pokemon:
         self.pickRandomMove(self.MoveTwo)
         self.pickRandomMove(self.MoveThree)
         self.pickRandomMove(self.MoveFour)
-        '''
-        self.MoveOneIndex = random.randrange(len(pokemonMoves))
-        self.MoveTwoIndex = random.randrange(len(pokemonMoves))
-        self.MoveThreeIndex = random.randrange(len(pokemonMoves))
-        self.MoveFourIndex = random.randrange(len(pokemonMoves))
-        '''
+
     def pickRandomMove(self, moveNum): #this will need to be changed so that only moves relavent to the pokemon are selected
         while(1):
             randomMove = random.randrange(len(pokemonMoves))
@@ -199,7 +193,7 @@ async def on_message(message):
 
     if message.content.startswith('!pkmn'):
         def check(reaction, user):
-            return user == message.author #I have no idea wtf this does but checking message reactions does not work without it
+            return user == message.author 
 
         #Random encounter battle loop
         if message.content.startswith('!pkmn wBattle'):
