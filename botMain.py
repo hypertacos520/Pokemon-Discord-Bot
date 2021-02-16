@@ -28,7 +28,7 @@ with open(programDirectory + '/Resources/botToken.txt', 'r') as file:
 #Define Useful Functions
 #Convert the Text Representation of Pokemon Types to a Numerical Representation
 #Representation may seem random, but it actually is made to match up with the movest dataset
-def convert_type_to_num(typeText): #Lets just ignore I didn't use a python structure for this for now...
+def convert_type_to_num(typeText): #Change the following 2 functions to a more useful python format in the future
     if typeText == 'Fairy': 
         return 18
     elif typeText == 'Normal':
@@ -144,7 +144,7 @@ class Pokemon:
         self.HP = pokemonData[pokemonEntryNumber][1]
         self.Attack = pokemonData[pokemonEntryNumber][2]
         self.Defense = pokemonData[pokemonEntryNumber][3]
-        self.TotalHP = math.floor(0.01 * (2 * self.HP) * self.Level) + self.Level + 50 #This is a slightly modified formula for how pkmn HP is actually calculated
+        self.TotalHP = math.floor(0.01 * (2 * self.HP) * self.Level) + self.Level + 50 #This formula calculates the HP of a given pokemon
         self.CurrentHP = self.TotalHP #Set to max health upon initial selection
         self.SpAtk = pokemonData[pokemonEntryNumber][4]
         self.SpDef = pokemonData[pokemonEntryNumber][5]
@@ -156,7 +156,7 @@ class Pokemon:
         self.pickRandomMove(self.MoveThree)
         self.pickRandomMove(self.MoveFour)
 
-    def pickRandomMove(self, moveNum): #this will need to be changed so that only moves relavent to the pokemon are selected
+    def pickRandomMove(self, moveNum): #this will need to be changed so that only relevant moves are selected
         while(1):
             randomMove = random.randrange(len(pokemonMoves))
             if pokemonMoves[randomMove][6] == 2: #The randomly selected move needs to be a physical attack for the time being. In the future, more move types will be supported.
@@ -173,7 +173,7 @@ class Pokemon:
         moveNum.Accuracy = pokemonMoves[randomMove][4]
         moveNum.Priority = pokemonMoves[randomMove][5]
 
-    def takeDamage(self, enemyPokemon, usedMove): #return 2 if fainted return 1 if super effective
+    def takeDamage(self, enemyPokemon, usedMove): #return 1 if super effective
         temp = self.CurrentHP
         self.CurrentHP = int(self.CurrentHP - (((((2*enemyPokemon.Level)/5)+2*usedMove.Power*(enemyPokemon.Attack/self.Defense))/50)+2)*3)
         if self.CurrentHP < 0:
@@ -300,7 +300,7 @@ async def on_message(message):
                         dealDamage = userPokemon.takeDamage(enemyPokemon, enemyPokemon.MoveFour)
                         if dealDamage == 1: #super effective if function returns 1
                                 await message.channel.send('Its super effective!')
-                    await status.delete() #May need to relocate this statement in the future
+                    await status.delete()
                     continue #continues the battle loop
                 #run menu option
                 elif reaction.emoji == '🔵':
@@ -308,13 +308,8 @@ async def on_message(message):
                     await msg.delete()
                     await message.channel.send('You got away safely.')
                     isInBattle = 0 #Battle ends
-                isInBattle = 0 #TEMPORARY DEBUG STATEMENT
-         
-        #Idea for a future function:
-        #Pull up pokemon data based on pokedex entry number or name
-        elif message.content.startswith('!pkmn lookup'):
-            await message.channel.send('Function is currently unimplemented')
-
+                isInBattle = 0 #Failsafe
+                
         #Run auto update system
         elif message.content.startswith('!pkmn Update'):
             await message.channel.send('Shutting down bot and updating from source...') 
