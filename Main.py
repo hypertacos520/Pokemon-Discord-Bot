@@ -3,7 +3,7 @@ import sys
 import urllib.request
 
 #NOTE this application REQUIRES executable permissions. It needs to be able to run itself after an update is fetched.
-applicationSource = "https://raw.githubusercontent.com/hypertacos520/Pokemon-Discord-Bot/master/botMain.py?token=ANRMXSTWFFIO7DUDSP43ICTAFQ2AC" #Change to download link from github
+applicationSource = "https://raw.githubusercontent.com/hypertacos520/Pokemon-Discord-Bot/master/botMain.py" #Change to download link from github
 currentDirectory = os.path.dirname(os.path.realpath(__file__))
 
 print("Hi! I'm the management script. Let me run the bot for you...")
