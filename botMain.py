@@ -10,6 +10,7 @@ import pandas as pd
 
 client = discord.Client()
 programDirectory = os.path.dirname(os.path.realpath(__file__))
+runProgramUpdate = 0
 
 #Import Pokemon Data
 pokemonDataSet = pd.read_csv(programDirectory + "/Resources/CSV/Pokemon.csv")
@@ -22,6 +23,7 @@ print(pokemonData[0]) #Data Entry Example
 #MAKE SURE THE BOT TOKEN IS IN botToken.txt!!
 with open(programDirectory + '/Resources/botToken.txt', 'r') as file:
     botToken = file.read()
+    file.close()
 
 #Define Useful Functions
 #Convert the Text Representation of Pokemon Types to a Numerical Representation
@@ -313,12 +315,15 @@ async def on_message(message):
         elif message.content.startswith('!pkmn lookup'):
             await message.channel.send('Function is currently unimplemented')
 
+        #Run auto update system
         elif message.content.startswith('!pkmn Update'):
-            await message.channel.send('Shutting down bot and updating from source...')
-            runProgramUpdate = 0
+            await message.channel.send('Shutting down bot and updating from source...') 
+            global runProgramUpdate
+            runProgramUpdate = 1
+            await client.close()
 
         #Default response when a command is not detected
         else:
-            await message.channel.send('You need to specify a command! The available options are:\n wBattle --Start a fully randomized Wild Pokemon Encounter') #\n- lookup --Pull up the data entry for a given Pokemon
+            await message.channel.send('You need to specify a command! The available options are:\n\n wBattle --Start a fully randomized Wild Pokemon Encounter\n Update --Update bot from source and restart') #\n- lookup --Pull up the data entry for a given Pokemon
 
 client.run(botToken) #Discord bot token. Now applied externally via botToken.txt
