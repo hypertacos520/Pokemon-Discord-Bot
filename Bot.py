@@ -17,7 +17,6 @@ pokemonDataSet = pd.read_csv(programDirectory + "/Resources/CSV/Pokemon.csv")
 pokemonMovesDataSet = pd.read_csv(programDirectory + "/Resources/CSV/Moves.csv")
 pokemonData = pokemonDataSet[['Name', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed', 'Type 1', 'Type 2']].values.tolist()
 pokemonMoves = pokemonMovesDataSet[['identifier', 'type_id', 'power', 'pp', 'accuracy', 'priority', 'damage_class_id']].values.tolist()
-print(pokemonData[0]) #Data Entry Example
 
 #Open and apply Discord Bot Token
 #MAKE SURE THE BOT TOKEN IS IN botToken.txt!!
@@ -199,14 +198,14 @@ async def on_message(message):
 
         #Random encounter battle loop
         if message.content.startswith('!pkmn wBattle'):
-            await message.channel.send('starting random encounter...') #battle initial setup
+            #battle initial setup
             isInBattle = 1
             baseLevel = random.randint(4, 97) #level is generated between 4 and 97 because the real range is baseLevel +- up to 2
             userPokemon = Pokemon()
             enemyPokemon = Pokemon()
             userPokemon.selectNewPokemon(baseLevel)
             enemyPokemon.selectNewPokemon(baseLevel)
-            await message.channel.send(f"A wild {enemyPokemon.Name} has appeared!\nGo {userPokemon.Name}!")
+            await message.channel.send(f"Running through the tall grass...\nA wild {enemyPokemon.Name} has appeared!\nGo {userPokemon.Name}!")
             #main battle loop
             while isInBattle:
                 status = await message.channel.send(f"**                                                                       {enemyPokemon.Name} [HP: {enemyPokemon.CurrentHP}/{enemyPokemon.TotalHP} | Lvl: {enemyPokemon.Level}]\n[HP: {userPokemon.CurrentHP}/{userPokemon.TotalHP} | Lvl: {userPokemon.Level}] {userPokemon.Name}**") 
@@ -309,10 +308,10 @@ async def on_message(message):
                     await message.channel.send('You got away safely.')
                     isInBattle = 0 #Battle ends
                 isInBattle = 0 #Failsafe
-                
+
         #Run auto update system
         elif message.content.startswith('!pkmn Update'):
-            await message.channel.send('Shutting down bot and updating from source...') 
+            await message.channel.send('Updating from source and restarting...') 
             global runProgramUpdate
             runProgramUpdate = 1
             await client.close()
