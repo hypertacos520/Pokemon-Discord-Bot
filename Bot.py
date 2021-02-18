@@ -109,6 +109,14 @@ def convert_num_to_type(typeNum):
     else:
         return 0
 
+#Convert the move data entrys to a more readable display format
+def moveEntryToName(dataEntry): 
+    strings = dataEntry.split("-")
+    finalString = ""
+    for i in strings:
+        finalString = finalString + i.capitalize() + " "
+    return finalString
+
 #Define Classes
 class pokemonMove:
     Name = None
@@ -165,7 +173,7 @@ class Pokemon:
                     print("Error: Move did not pass attack check! Generating new one...")
                     continue
                 break
-        moveNum.Name = pokemonMoves[randomMove][0]
+        moveNum.Name = moveEntryToName(pokemonMoves[randomMove][0])
         moveNum.Type = convert_num_to_type(pokemonMoves[randomMove][1])
         moveNum.Power = pokemonMoves[randomMove][2]
         moveNum.PP = pokemonMoves[randomMove][3]
@@ -178,7 +186,7 @@ class Pokemon:
         if self.CurrentHP < 0:
             self.CurrentHP = 0
         temp = temp - self.CurrentHP
-        print(f'Dealt {temp} damage.')
+        print(f'Dealt {temp} damage to {enemyPokemon.Name} using {usedMove.Name}.')
 
 #Discord Bot Commands
 @client.event
@@ -200,7 +208,7 @@ async def on_message(message):
         if message.content.startswith('!pkmn wBattle'):
             #battle initial setup
             isInBattle = 1
-            baseLevel = random.randint(4, 97) #level is generated between 4 and 97 because the real range is baseLevel +- up to 2
+            baseLevel = random.randint(3, 98) #level is generated between 3 and 98 because the real range is baseLevel +- up to 2
             userPokemon = Pokemon()
             enemyPokemon = Pokemon()
             userPokemon.selectNewPokemon(baseLevel)
@@ -223,13 +231,12 @@ async def on_message(message):
                 while (1):
                     print('Users turn. Waiting for menu seleciton.')
                     reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
-                    if reaction.emoji != '🔴' and reaction.emoji != '🔵':
+                    if reaction.emoji != '🔴' and reaction.emoji != '🔵': #fixes a bug where the bot responds to any emoji reaction
                         continue
                     else:
                         break
                 #show attack menu
                 if reaction.emoji == '🔴':
-                    print('User reacted with 🔴. Displaying attack menu.')
                     await msg.delete()
                     msg = await message.channel.send(f'Attack:\n🔴 - [{userPokemon.MoveOne.Type}] {userPokemon.MoveOne.Name}\n🔵 - [{userPokemon.MoveTwo.Type}] {userPokemon.MoveTwo.Name}\n🟡 - [{userPokemon.MoveThree.Type}] {userPokemon.MoveThree.Name}\n🟢 - [{userPokemon.MoveFour.Type}] {userPokemon.MoveFour.Name}')
                     await msg.add_reaction('⬅')
@@ -245,34 +252,29 @@ async def on_message(message):
                         else:
                             break
                     if reaction.emoji == '⬅':
-                        print('User reacted with ⬅. Returning to previous menu.')
                         await status.delete()
                         await msg.delete()
                         continue
                     #attack cases
                     elif reaction.emoji == '🔴':
-                        print(f'User reacted with 🔴. Using {userPokemon.MoveOne.Name}.')
                         await msg.delete()
                         await message.channel.send(f'{userPokemon.Name} used {userPokemon.MoveOne.Name}!')
                         dealDamage = enemyPokemon.takeDamage(userPokemon, userPokemon.MoveOne)
                         if dealDamage == 1: #super effective if function returns 1
                             await message.channel.send('Its super effective!')
                     elif reaction.emoji == '🔵':
-                        print(f'User reacted with 🔵. Using {userPokemon.MoveTwo.Name}.')
                         await msg.delete()
                         await message.channel.send(f'{userPokemon.Name} used {userPokemon.MoveTwo.Name}!')
                         dealDamage = enemyPokemon.takeDamage(userPokemon, userPokemon.MoveTwo)
                         if dealDamage == 1: #super effective if function returns 1
                             await message.channel.send('Its super effective!')
                     elif reaction.emoji == '🟡':
-                        print(f'User reacted with 🟡. Using {userPokemon.MoveThree.Name}.')
                         await msg.delete()
                         await message.channel.send(f'{userPokemon.Name} used {userPokemon.MoveThree.Name}!')
                         dealDamage = enemyPokemon.takeDamage(userPokemon, userPokemon.MoveThree)
                         if dealDamage == 1: #super effective if function returns 1
                             await message.channel.send('Its super effective!')
                     elif reaction.emoji == '🟢':
-                        print(f'User reacted with 🟢. Using {userPokemon.MoveFour.Name}.')
                         await msg.delete()
                         await message.channel.send(f'{userPokemon.Name} used {userPokemon.MoveFour.Name}!')
                         dealDamage = enemyPokemon.takeDamage(userPokemon, userPokemon.MoveFour)
@@ -303,7 +305,6 @@ async def on_message(message):
                     continue #continues the battle loop
                 #run menu option
                 elif reaction.emoji == '🔵':
-                    print('User reacted with 🔵. Time to run!')
                     await msg.delete()
                     await message.channel.send('You got away safely.')
                     isInBattle = 0 #Battle ends
