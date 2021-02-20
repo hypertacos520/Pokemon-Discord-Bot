@@ -3,6 +3,7 @@
 #Import Libraries
 import discord
 import random
+import asyncio
 import math
 import time
 import os
@@ -262,7 +263,10 @@ async def on_message(message):
             await menu.add_reaction(wordToEmoji('blue'))
             while (1):
                 print('Users turn. Waiting for menu seleciton.')
-                reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
+                try:
+                    reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
+                except asyncio.TimeoutError:
+                    return None
                 if reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue'): #fixes a bug where the bot responds to any emoji reaction
                     continue
                 else:
@@ -278,7 +282,10 @@ async def on_message(message):
                 await menu.add_reaction(wordToEmoji('green'))
                 while (1):
                     print('Users turn. Waiting for menu seleciton.')
-                    reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
+                    try: 
+                        reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
+                    except asyncio.TimeoutError:
+                        return None
                     if reaction.emoji != wordToEmoji('back') and reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue') and reaction.emoji != wordToEmoji('yellow') and reaction.emoji != wordToEmoji('green'): #fixes a bug where the bot responds to any emoji reaction
                         continue
                     else:
@@ -300,12 +307,14 @@ async def on_message(message):
                     await menu.delete()
                     return 4
                 else:
-                    print("We shouldn't have got this far! This is a bug!")
+                    print("PLAYER INPUT: Could not read decision. This is a bug!")
             #run menu option
             elif reaction.emoji == wordToEmoji('blue'):
                 await menu.delete()
                 await message.channel.send('You got away safely.')
                 return 0 #Battle ends
+            else: #This happens if the user is idle and does not select anything.
+                return None
     
     def runMoveSelection(userPokemon, userMoveSelection, enemyPokemon, enemyMoveSelection):
         userMove = userPokemon.numericalInputToMove(userMoveSelection)
@@ -324,6 +333,9 @@ async def on_message(message):
             dealDamage = userPokemon.takeDamage(enemyPokemon, enemyMove)
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
+
+        if userMove == None:
+            return None
 
         if userMove.Priority > enemyMove.Priority: #User attacks first
             performUserMove()
@@ -362,7 +374,7 @@ async def on_message(message):
                 discordOutput = discordOutput + f'{enemyPokemon.Name} has fainted.\n'
                 return 0
         else:
-            print('Nothing Happened???')
+            print('RUN MOVE SELECTION: Nothing Happened... This is a bug!')
 
     if message.author == client.user:
         return
@@ -392,6 +404,12 @@ async def on_message(message):
                 status = f"**                                                                       {enemyPokemon.Name} [HP: {enemyPokemon.CurrentHP}/{enemyPokemon.TotalHP} | Lvl: {enemyPokemon.Level}]\n[HP: {userPokemon.CurrentHP}/{userPokemon.TotalHP} | Lvl: {userPokemon.Level}] {userPokemon.Name}**"
                 discordOutput = discordOutput + status
                 await combatContext.delete()
+                if result == None:
+                    discordOutput = discordOutput + '\nUser was idle for too long! Battle has ended.'
+                    await message.channel.send(discordOutput)
+                    isInBattle = 0
+                    print('Battle has ended!')
+                    break
                 if result == 0:
                     discordOutput = discordOutput + '\nYou Win!'
                     await message.channel.send(discordOutput)
