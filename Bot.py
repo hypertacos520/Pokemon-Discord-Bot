@@ -127,10 +127,30 @@ def convert_num_to_type(typeNum):
 #Convert the move data entrys to a more readable display format
 def moveEntryToName(dataEntry): 
     strings = dataEntry.split("-")
+    j = 1
     finalString = ""
     for i in strings:
-        finalString = finalString + i.capitalize() + " "
+        finalString = finalString + i.capitalize()
+        if j != len(strings):
+            finalString = finalString + " "
+            j = j + 1
     return finalString
+
+def pkmnNameEntryToName(dataEntry):
+    newString = ""
+    capitalNumber = 0
+    for i in dataEntry:
+        if ord(i) < 91 and capitalNumber == 0:
+            capitalNumber = capitalNumber + 1
+            newString = newString + i
+        elif ord(i) < 91 and capitalNumber > 0 and capitalNumber < 2:
+            capitalNumber = capitalNumber + 1
+            newString = newString + ' (' + i
+        else:
+            newString = newString + i
+    if capitalNumber > 1:
+        newString = newString + ')'
+    return newString
 
 #Define Classes
 class pokemonMove:
@@ -163,7 +183,7 @@ class Pokemon:
     def selectNewPokemon(self, baseLevel):
         pokemonEntryNumber = random.randrange(len(pokemonData))
         self.Level = random.randint(baseLevel - 2, baseLevel + 2) #Modify to add or subract up to 2 from this number
-        self.Name = pokemonData[pokemonEntryNumber][0]
+        self.Name = pkmnNameEntryToName(pokemonData[pokemonEntryNumber][0])
         self.HP = pokemonData[pokemonEntryNumber][1]
         self.Attack = pokemonData[pokemonEntryNumber][2]
         self.Defense = pokemonData[pokemonEntryNumber][3]
@@ -375,10 +395,14 @@ async def on_message(message):
                 if result == 0:
                     discordOutput = discordOutput + '\nYou Win!'
                     await message.channel.send(discordOutput)
+                    isInBattle = 0
+                    print('Battle has ended!')
                     break
                 if result == 1:
                     discordOutput = discordOutput + '\nTry Again?'
                     await message.channel.send(discordOutput)
+                    isInBattle = 0
+                    print('Battle has ended!')
                     break
                 combatContext = await message.channel.send(discordOutput)
                 continue
