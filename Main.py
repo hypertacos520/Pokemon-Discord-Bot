@@ -16,6 +16,7 @@ def updateFile(url, fileName):
 print("Hi! I'm the management script. Let me run the bot for you...")
 import Bot #We're gonna run the bot as a subprocess to the updater
 if Bot.runProgramUpdate == 1:
+    print(f'Updates requested! Starting download...')
     updateFile(botSource, "Bot.py")
     updateFile(updaterSource, "Main.py")
     print(f'Updates completed! Rebooting bot...')
