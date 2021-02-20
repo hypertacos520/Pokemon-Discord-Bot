@@ -266,6 +266,7 @@ async def on_message(message):
                 try:
                     reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
                 except asyncio.TimeoutError:
+                    await menu.delete()
                     return None
                 if reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue'): #fixes a bug where the bot responds to any emoji reaction
                     continue
@@ -285,6 +286,7 @@ async def on_message(message):
                     try: 
                         reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
                     except asyncio.TimeoutError:
+                        await menu.delete()
                         return None
                     if reaction.emoji != wordToEmoji('back') and reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue') and reaction.emoji != wordToEmoji('yellow') and reaction.emoji != wordToEmoji('green'): #fixes a bug where the bot responds to any emoji reaction
                         continue
