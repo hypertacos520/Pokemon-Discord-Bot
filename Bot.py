@@ -240,7 +240,7 @@ class Pokemon:
         elif moveNum == 4:
             return self.MoveFour
         else:
-            return None
+            return ""
 
 #Discord Bot Commands
 @client.event
@@ -267,7 +267,7 @@ async def on_message(message):
                     reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
                 except asyncio.TimeoutError:
                     await menu.delete()
-                    return None
+                    return ""
                 if reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue'): #fixes a bug where the bot responds to any emoji reaction
                     continue
                 else:
@@ -287,7 +287,7 @@ async def on_message(message):
                         reaction, user = await client.wait_for('reaction_add', timeout=60.0, check=check) #wait for user to react
                     except asyncio.TimeoutError:
                         await menu.delete()
-                        return None
+                        return ""
                     if reaction.emoji != wordToEmoji('back') and reaction.emoji != wordToEmoji('red') and reaction.emoji != wordToEmoji('blue') and reaction.emoji != wordToEmoji('yellow') and reaction.emoji != wordToEmoji('green'): #fixes a bug where the bot responds to any emoji reaction
                         continue
                     else:
@@ -316,7 +316,7 @@ async def on_message(message):
                 await message.channel.send('You got away safely.')
                 return 0 #Battle ends
             else: #This happens if the user is idle and does not select anything.
-                return None
+                return ""
     
     def runMoveSelection(userPokemon, userMoveSelection, enemyPokemon, enemyMoveSelection):
         userMove = userPokemon.numericalInputToMove(userMoveSelection)
@@ -336,8 +336,9 @@ async def on_message(message):
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
 
-        if userMove == None:
-            return None
+        if userMove == "":
+            print(userMove)
+            return ""
 
         if userMove.Priority > enemyMove.Priority: #User attacks first
             performUserMove()
@@ -406,7 +407,7 @@ async def on_message(message):
                 status = f"**                                                                       {enemyPokemon.Name} [HP: {enemyPokemon.CurrentHP}/{enemyPokemon.TotalHP} | Lvl: {enemyPokemon.Level}]\n[HP: {userPokemon.CurrentHP}/{userPokemon.TotalHP} | Lvl: {userPokemon.Level}] {userPokemon.Name}**"
                 discordOutput = discordOutput + status
                 await combatContext.delete()
-                if result == None:
+                if result == "":
                     discordOutput = discordOutput + '\nUser was idle for too long! Battle has ended.'
                     await message.channel.send(discordOutput)
                     isInBattle = 0
