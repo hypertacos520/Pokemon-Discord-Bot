@@ -16,8 +16,10 @@ runProgramUpdate = 0
 #Import Pokemon Data
 pokemonDataSet = pd.read_csv(programDirectory + "/Resources/CSV/Pokemon.csv")
 pokemonMovesDataSet = pd.read_csv(programDirectory + "/Resources/CSV/Moves.csv")
+pokemonTypeEffectivenessDataSet = pd.read_csv(programDirectory + "/Resources/CSV/TypeEffectiveness.csv")
 pokemonData = pokemonDataSet[['Name', 'HP', 'Attack', 'Defense', 'Sp. Atk', 'Sp. Def', 'Speed', 'Type 1', 'Type 2']].values.tolist()
-pokemonMoves = pokemonMovesDataSet[['identifier', 'type_id', 'power', 'pp', 'accuracy', 'priority', 'damage_class_id']].values.tolist()
+pokemonMoves = pokemonMovesDataSet[['identifier', 'type_id', 'power', 'pp', 'accuracy', 'priority', 'damage_class_id']].values.tolist() 
+pokemonTypeEffectiveness = pokemonTypeEffectivenessDataSet[['damage_type_id', 'target_type_id' ,'damage_factor']].values.tolist()
 
 #Open and apply Discord Bot Token
 #MAKE SURE THE BOT TOKEN IS IN botToken.txt!!
@@ -26,6 +28,14 @@ with open(programDirectory + '/Resources/botToken.txt', 'r') as file:
     file.close()
 
 #Define Useful Functions
+#determines if a move is super effective, not very effective, or normal.
+def getTypeEffectiveness(moveTypeID, targetTypeID):
+    for i in pokemonTypeEffectiveness:
+        if i[0] == moveTypeID:
+            if i[1] == targetTypeID:
+                return (i[2] / 100) #dataset has entries as either 50, 100, or 200. this converts it to 0.5, 1, or 2 instead.
+    return None
+
 #converts a input string to a unicode emoji
 def wordToEmoji(string):
     if string == 'red':
@@ -224,11 +234,16 @@ class Pokemon:
 
     def takeDamage(self, enemyPokemon, usedMove): #return 1 if super effective
         temp = self.CurrentHP
-        self.CurrentHP = int(self.CurrentHP - (((((2*enemyPokemon.Level)/5)+2*usedMove.Power*(enemyPokemon.Attack/self.Defense))/50)+2)*3)
+        typeMultiplyer = getTypeEffectiveness(convert_type_to_num(usedMove.Type), convert_type_to_num(enemyPokemon.TypeOne))
+        self.CurrentHP = int(self.CurrentHP - ((((((2*enemyPokemon.Level)/5)+2*usedMove.Power*(enemyPokemon.Attack/self.Defense))/50)+2)*3*typeMultiplyer))
         if self.CurrentHP < 0:
             self.CurrentHP = 0
         temp = temp - self.CurrentHP
         print(f'Dealt {temp} damage to {enemyPokemon.Name} using {usedMove.Name}.')
+        if typeMultiplyer == 0.5: #Not effective
+            return 2
+        if typeMultiplyer == 2: #Super effective
+            return 1
     
     def numericalInputToMove(self, moveNum): #converts integer to move number
         if moveNum == 1:
@@ -329,12 +344,16 @@ async def on_message(message):
             dealDamage = enemyPokemon.takeDamage(userPokemon, userMove)
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
+            if dealDamage == 2: #super effective if function returns 1
+                discordOutput = discordOutput + 'Its not very effective...\n'
         def performEnemyMove():
             global discordOutput
             discordOutput = discordOutput + f'The opposing {enemyPokemon.Name} used {enemyMove.Name}!\n'
             dealDamage = userPokemon.takeDamage(enemyPokemon, enemyMove)
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
+            if dealDamage == 2: #super effective if function returns 1
+                discordOutput = discordOutput + 'Its not very effective...\n'
 
         if userMove == "":
             print(userMove)
