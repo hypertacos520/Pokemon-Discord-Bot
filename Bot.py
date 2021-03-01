@@ -41,6 +41,14 @@ def wordToEmoji(string):
     else:
         return None
 
+#determines if a move is super effective, not very effective, or normal.
+def getTypeEffectiveness(moveTypeID, targetTypeID):
+    for i in pokemonTypeEffectiveness:
+        if i[0] == moveTypeID:
+            if i[1] == targetTypeID:
+                return (i[2] / 100) #dataset has entries as either 50, 100, or 200. this converts it to 0.5, 1, or 2 instead.
+    return None
+
 #Convert the Text Representation of Pokemon Types to a Numerical Representation
 #Representation may seem random, but it actually is made to match up with the movest dataset
 def convert_type_to_num(typeText): #Change the following 2 functions to a more useful python format in the future
@@ -159,7 +167,8 @@ class pokemonMove:
     EntryNumber = None
     Type = None
     Power = None
-    PP = None
+    PPCurrent = None
+    PPTotal = None
     Accuracy = None
     Priority = None
 
@@ -214,7 +223,8 @@ class Pokemon:
         moveNum.EntryNumber = randomMove #Used to find the entry from the dataset again
         moveNum.Type = convert_num_to_type(pokemonMoves[randomMove][1])
         moveNum.Power = pokemonMoves[randomMove][2]
-        moveNum.PP = pokemonMoves[randomMove][3]
+        moveNum.PPTotal = pokemonMoves[randomMove][3]
+        moveNum.PPCurrent = moveNum.PPTotal
         moveNum.Accuracy = pokemonMoves[randomMove][4]
         if pokemonMoves[randomMove][5] == "":
             print('Move has no priority value! Assigning default.')
@@ -274,7 +284,7 @@ async def on_message(message):
             #Display attack options
             if reaction.emoji == wordToEmoji('red'):
                 await menu.delete()
-                menu = await message.channel.send(f'Attack:\n{wordToEmoji("red")} - [{userPokemon.MoveOne.Type}] {userPokemon.MoveOne.Name}\n{wordToEmoji("blue")} - [{userPokemon.MoveTwo.Type}] {userPokemon.MoveTwo.Name}\n{wordToEmoji("yellow")} - [{userPokemon.MoveThree.Type}] {userPokemon.MoveThree.Name}\n{wordToEmoji("green")} - [{userPokemon.MoveFour.Type}] {userPokemon.MoveFour.Name}')
+                menu = await message.channel.send(f'Attack:\n{wordToEmoji("red")} - **[{userPokemon.MoveOne.Type}]** {userPokemon.MoveOne.Name}\n{wordToEmoji("blue")} - **[{userPokemon.MoveTwo.Type}]** {userPokemon.MoveTwo.Name}\n{wordToEmoji("yellow")} - **[{userPokemon.MoveThree.Type}]** {userPokemon.MoveThree.Name}\n{wordToEmoji("green")} - **[{userPokemon.MoveFour.Type}]** {userPokemon.MoveFour.Name}')
                 await menu.add_reaction(wordToEmoji('back'))
                 await menu.add_reaction(wordToEmoji('red'))
                 await menu.add_reaction(wordToEmoji('blue'))
@@ -327,12 +337,16 @@ async def on_message(message):
             dealDamage = enemyPokemon.takeDamage(userPokemon, userMove)
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
+            if dealDamage == 2: #not effective if function returns 2
+                discordOutput = discordOutput + 'Its not very effective...\n'
         def performEnemyMove():
             global discordOutput
             discordOutput = discordOutput + f'The opposing {enemyPokemon.Name} used {enemyMove.Name}!\n'
             dealDamage = userPokemon.takeDamage(enemyPokemon, enemyMove)
             if dealDamage == 1: #super effective if function returns 1
                 discordOutput = discordOutput + 'Its super effective!\n'
+            if dealDamage == 2: #not effective if function returns 2
+                discordOutput = discordOutput + 'Its not very effective...\n'
 
         if userMove == None:
             return None
@@ -434,6 +448,6 @@ async def on_message(message):
 
         #Default response when a command is not detected
         else:
-            await message.channel.send('You need to specify a command! The available options are:\n\n wBattle --Start a fully randomized Wild Pokemon Encounter\n Update --Update bot from source and restart') #\n- lookup --Pull up the data entry for a given Pokemon
+            await message.channel.send('Unrecognized command! The available options are:\n\n wBattle --Start a fully randomized Wild Pokemon Encounter\n Update --Update bot from source and restart') #\n- lookup --Pull up the data entry for a given Pokemon
 
 client.run(botToken) #Discord bot token. Now applied externally via botToken.txt
