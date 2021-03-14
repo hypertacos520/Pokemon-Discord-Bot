@@ -519,6 +519,18 @@ async def on_message(message):
                 if(Player1 == "" and Player2 == ""):
                     await message.channel.send('Game setup has been terminated.')
                     break
+                overwrites1 = {
+                    message.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    message.guild.me: discord.PermissionOverwrite(read_messages=True),
+                    Player1: discord.PermissionOverwrite(read_messages=True)
+                }
+                overwrites2 = {
+                    message.guild.default_role: discord.PermissionOverwrite(read_messages=False),
+                    message.guild.me: discord.PermissionOverwrite(read_messages=True),
+                    Player2: discord.PermissionOverwrite(read_messages=True)
+                }
+                p1Channel = await message.guild.create_text_channel("Player 1 UI", overwrites=overwrites1, category=message.channel.category)
+                p2Channel = await message.guild.create_text_channel("Player 2 UI", overwrites=overwrites2, category=message.channel.category)
                 isInBattle = 1
                 baseLevel = random.randint(3, 98) #level is generated between 3 and 98 because the real range is baseLevel +- up to 2
                 player1Pokemon = Pokemon()
@@ -533,28 +545,28 @@ async def on_message(message):
                 while isInBattle:
                     discordOutput = "" #All info the bot needs to send to discord should be stored in this variable
                     #Get player 1 input
-                    p2message = await message.channel.send(f"It's {Player1}'s turn!") #change to Player2.send later
+                    p2message = await p2Channel.send(f"It's currently {Player1}'s turn.") #change to Player2.send later
                     while(1):
-                        #p1message = await Player1.send("It's your turn!")
-                        player1Decision = await playerInput(player1Pokemon, message.channel) #Change to Player1 in the future
+                        p1message = await p1Channel.send("It's your turn!")
+                        player1Decision = await playerInput(player1Pokemon, p1Channel) #Change to Player1 in the future
                         if player1Decision == 0:
-                            runMessage = await message.channel.send("You cannot run from a player battle!") #change to Player1.send later
-                            continue
-                        #await p1message.delete()
-                        await p2message.delete()
-                        await runMessage.delete()
-                        break
-                    #Get player 2 input
-                    p1message = await message.channel.send(f"It's {Player2}'s turn!") #change to Player1.send later
-                    while(1):
-                        #p2message = await Player2.send("It's your turn!")
-                        player2Decision = await playerInput(player2Pokemon, message.channel) #Change to Player2 in the future
-                        if player2Decision == 0:
-                            runMessage = await message.channel.send("You cannot run from a player battle!") #change to Player2.send later
+                            runMessage = await p1Channel.send("You cannot run from a player battle!") #change to Player1.send later
+                            await p1message.delete()
                             continue
                         await p1message.delete()
-                        #await p2message.delete()
-                        runMessage.delete()
+                        await p2message.delete()
+                        break
+                    #Get player 2 input
+                    p1message = await p1Channel.send(f"It's currently {Player2}'s turn.") #change to Player1.send later
+                    while(1):
+                        p2message = await p2Channel.send("It's your turn!")
+                        player2Decision = await playerInput(player2Pokemon, p2Channel) #Change to Player2 in the future
+                        if player2Decision == 0:
+                            runMessage = await p2Channel.send("You cannot run from a player battle!") #change to Player2.send later
+                            await p2message.delete()
+                            continue
+                        await p1message.delete()
+                        await p2message.delete()
                         break
                     result = runMoveSelection(player1Pokemon, player1Decision, player2Pokemon, player2Decision)
                     status = f"**                                                                       {player2Pokemon.Name} [HP: {player2Pokemon.CurrentHP}/{player2Pokemon.TotalHP} | Lvl: {player2Pokemon.Level}]\n[HP: {player1Pokemon.CurrentHP}/{player1Pokemon.TotalHP} | Lvl: {player1Pokemon.Level}] {player1Pokemon.Name}**"
@@ -562,23 +574,31 @@ async def on_message(message):
                     await combatContext.delete()
                     if result == "":
                         discordOutput = discordOutput + '\nUser was idle for too long! Battle has ended.'
+                        await p1Channel.delete()
+                        await p2Channel.delete()
                         await message.channel.send(discordOutput)
                         isInBattle = 0
                         print('Battle has ended!')
                         break
                     if result == 0:
                         discordOutput = discordOutput + f'\n{Player2} Wins!'
+                        await p1Channel.delete()
+                        await p2Channel.delete()
                         await message.channel.send(discordOutput)
                         isInBattle = 0
                         print('Battle has ended!')
                         break
                     if result == 1:
                         discordOutput = discordOutput + f'\n{Player1} Wins!'
+                        await p1Channel.delete()
+                        await p2Channel.delete()
                         await message.channel.send(discordOutput)
                         isInBattle = 0
                         print('Battle has ended!')
                         break
                     combatContext = await message.channel.send(discordOutput)
+                    await p1Channel.send(discordOutput)
+                    await p2Channel.send(discordOutput)
                     continue
                 break
 
